@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>用户注册 - 图书馆管理系统</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 2em;
+        }
+        .header p {
+            margin: 10px 0 0 0;
+            opacity: 0.9;
+        }
+        .form-container {
+            padding: 30px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+            color: #333;
+        }
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e1e1e1;
+            border-radius: 5px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+            box-sizing: border-box;
+        }
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        .form-row {
+            display: flex;
+            gap: 15px;
+        }
+        .form-row .form-group {
+            flex: 1;
+        }
+        .submit-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 18px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .submit-btn:hover {
+            transform: translateY(-2px);
+        }
+        .submit-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .message {
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            display: none;
+        }
+        .message.success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .message.error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        @media (max-width: 768px) {
+            .form-row {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📚 用户注册</h1>
+            <p>欢迎加入图书馆管理系统</p>
+        </div>
+        
+        <div class="form-container">
+            <div id="message" class="message"></div>
+            
+            <form id="registrationForm">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="username">用户名 *</label>
+                        <input type="text" id="username" name="username" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="realName">真实姓名 *</label>
+                        <input type="text" id="realName" name="realName" required>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="userType">用户类型 *</label>
+                        <select id="userType" name="userType" required>
+                            <option value="">请选择</option>
+                            <option value="student">学生</option>
+                            <option value="teacher">教师</option>
+                            <option value="staff">职工</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="studentId">学号/工号 *</label>
+                        <input type="text" id="studentId" name="studentId" required>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="classDepartment">班级/部门 *</label>
+                    <input type="text" id="classDepartment" name="classDepartment" required>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="phone">手机号码 *</label>
+                        <input type="tel" id="phone" name="phone" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="email">邮箱地址 *</label>
+                        <input type="email" id="email" name="email" required>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="password">登录密码 *</label>
+                        <input type="password" id="password" name="password" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="confirmPassword">确认密码 *</label>
+                        <input type="password" id="confirmPassword" name="confirmPassword" required>
+                    </div>
+                </div>
+                
+                <button type="submit" class="submit-btn" id="submitBtn">
+                    注册账户
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/axios@1.6.0/dist/axios.min.js"></script>
+    <script>
+        // API配置
+        const API_BASE_URL = 'http://localhost:8081/api';
+        
+        const form = document.getElementById('registrationForm');
+        const submitBtn = document.getElementById('submitBtn');
+        const messageDiv = document.getElementById('message');
+        
+        function showMessage(text, type) {
+            messageDiv.textContent = text;
+            messageDiv.className = `message ${type}`;
+            messageDiv.style.display = 'block';
+            
+            if (type === 'success') {
+                setTimeout(() => {
+                    messageDiv.style.display = 'none';
+                }, 5000);
+            }
+        }
+        
+        function setLoading(loading) {
+            submitBtn.disabled = loading;
+            submitBtn.textContent = loading ? '注册中...' : '注册账户';
+        }
+        
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            // 简单验证
+            const formData = new FormData(form);
+            const password = formData.get('password');
+            const confirmPassword = formData.get('confirmPassword');
+            
+            if (password !== confirmPassword) {
+                showMessage('两次输入的密码不一致', 'error');
+                return;
+            }
+            
+            if (password.length < 6) {
+                showMessage('密码长度至少6位', 'error');
+                return;
+            }
+            
+            setLoading(true);
+            
+            try {
+                const userData = {
+                    username: formData.get('username'),
+                    realName: formData.get('realName'),
+                    userType: formData.get('userType'),
+                    studentId: formData.get('studentId'),
+                    classDepartment: formData.get('classDepartment'),
+                    phone: formData.get('phone'),
+                    email: formData.get('email'),
+                    password: formData.get('password'),
+                    confirmPassword: formData.get('confirmPassword')
+                };
+                
+                console.log('提交数据:', userData);
+                
+                const response = await axios.post(`${API_BASE_URL}/users`, userData, {
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                console.log('响应:', response.data);
+                
+                if (response.data.success) {
+                    showMessage('注册成功！您现在可以使用账号登录系统。', 'success');
+                    form.reset();
+                } else {
+                    showMessage(response.data.message || '注册失败', 'error');
+                }
+                
+            } catch (error) {
+                console.error('注册错误:', error);
+                
+                let errorMessage = '注册失败，请稍后重试';
+                
+                if (error.response) {
+                    console.log('错误响应:', error.response);
+                    if (error.response.data && error.response.data.message) {
+                        errorMessage = error.response.data.message;
+                    } else if (error.response.status === 400) {
+                        errorMessage = '请检查输入的信息是否正确';
+                    } else if (error.response.status === 409) {
+                        errorMessage = '用户名或邮箱已存在';
+                    }
+                }
+                
+                showMessage(errorMessage, 'error');
+            } finally {
+                setLoading(false);
+            }
+        });
+    </script>
+</body>
+</html> 

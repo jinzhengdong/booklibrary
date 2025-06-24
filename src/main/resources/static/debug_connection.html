@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>调试连接问题</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; background: #f5f5f5; }
+        .container { max-width: 800px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        .success { background: #d4edda; border-color: #c3e6cb; color: #155724; }
+        .error { background: #f8d7da; border-color: #f5c6cb; color: #721c24; }
+        .info { background: #d1ecf1; border-color: #bee5eb; color: #0c5460; }
+        button { background: #007bff; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; margin: 5px; }
+        button:hover { background: #0056b3; }
+        pre { background: #f8f9fa; padding: 10px; border-radius: 3px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 连接调试工具</h1>
+        
+        <div class="test-section info">
+            <h3>环境信息</h3>
+            <div id="envInfo"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>快速测试</h3>
+            <button onclick="quickTest()">一键测试</button>
+            <div id="testResult"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>详细诊断</h3>
+            <button onclick="testHealth()">健康检查</button>
+            <button onclick="testCORS()">CORS测试</button>
+            <button onclick="testAPI()">API测试</button>
+            <div id="detailResult"></div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/axios@1.5.0/dist/axios.min.js"></script>
+    <script>
+        const baseURL = `${window.location.protocol}//${window.location.hostname}:8081`;
+        
+        // 显示环境信息
+        function showEnvInfo() {
+            document.getElementById('envInfo').innerHTML = `
+                <strong>当前地址:</strong> ${window.location.href}<br>
+                <strong>后端地址:</strong> ${baseURL}<br>
+                <strong>Origin:</strong> ${window.location.origin}
+            `;
+        }
+
+        // 快速测试
+        async function quickTest() {
+            const resultDiv = document.getElementById('testResult');
+            resultDiv.innerHTML = '<div class="info">正在测试...</div>';
+            
+            console.log('开始快速测试，后端地址:', baseURL);
+            
+            try {
+                // 测试健康检查
+                console.log('测试健康检查...');
+                const healthResponse = await axios.get(`${baseURL}/api/categories/health`, { 
+                    timeout: 5000,
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                console.log('健康检查成功:', healthResponse.data);
+                
+                // 测试分类API
+                console.log('测试分类API...');
+                const apiResponse = await axios.get(`${baseURL}/api/categories`, { 
+                    params: { pageNum: 1, pageSize: 5 },
+                    timeout: 10000,
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                console.log('分类API成功:', apiResponse.data);
+                
+                resultDiv.innerHTML = `
+                    <div class="success">
+                        <h4>✅ 所有测试通过！</h4>
+                        <strong>健康检查:</strong> ${JSON.stringify(healthResponse.data)}<br>
+                        <strong>API响应:</strong> 成功获取 ${apiResponse.data.data?.categories?.length || 0} 条记录<br>
+                        <strong>总记录数:</strong> ${apiResponse.data.data?.total || 0}<br><br>
+                        <strong>🎉 您的分类查询页面应该可以正常工作了！</strong><br>
+                        <a href="category_query.html" target="_blank">点击这里打开分类查询页面</a><br><br>
+                        <strong>详细响应数据:</strong><br>
+                        <pre>${JSON.stringify(apiResponse.data, null, 2)}</pre>
+                    </div>
+                `;
+            } catch (error) {
+                console.error('测试失败:', error);
+                
+                let errorMsg = '';
+                let errorDetails = '';
+                
+                if (error.code === 'ECONNREFUSED' || error.message.includes('Network Error')) {
+                    errorMsg = '❌ 无法连接到后端服务 (8081端口)';
+                    errorDetails = `错误代码: ${error.code}\n错误消息: ${error.message}`;
+                } else if (error.response) {
+                    errorMsg = `❌ HTTP错误: ${error.response.status} - ${error.response.statusText}`;
+                    errorDetails = `响应数据: ${JSON.stringify(error.response.data, null, 2)}\n请求URL: ${error.config?.url}\n请求方法: ${error.config?.method}`;
+                } else if (error.request) {
+                    errorMsg = '❌ 请求发送失败 - 可能是CORS或网络问题';
+                    errorDetails = `请求对象: ${error.request}\n错误消息: ${error.message}`;
+                } else {
+                    errorMsg = `❌ 请求配置错误: ${error.message}`;
+                    errorDetails = `完整错误: ${JSON.stringify(error, null, 2)}`;
+                }
+                
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <h4>测试失败</h4>
+                        ${errorMsg}<br><br>
+                        <strong>错误详情:</strong><br>
+                        <pre>${errorDetails}</pre><br>
+                        <strong>建议解决方案:</strong><br>
+                        1. 确认Spring Boot应用已启动并运行在8081端口<br>
+                        2. 检查浏览器控制台是否有CORS错误<br>
+                        3. 尝试在新的隐私窗口中打开页面<br>
+                        4. 检查防火墙和杀毒软件设置<br>
+                        5. 重启应用服务
+                    </div>
+                `;
+            }
+        }
+
+        // 健康检查
+        async function testHealth() {
+            const resultDiv = document.getElementById('detailResult');
+            try {
+                const response = await axios.get(`${baseURL}/api/categories/health`);
+                resultDiv.innerHTML = `<div class="success">✅ 健康检查成功: ${JSON.stringify(response.data)}</div>`;
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">❌ 健康检查失败: ${error.message}</div>`;
+            }
+        }
+
+        // CORS测试
+        async function testCORS() {
+            const resultDiv = document.getElementById('detailResult');
+            try {
+                const response = await fetch(`${baseURL}/api/categories/health`);
+                const corsHeaders = {
+                    'Access-Control-Allow-Origin': response.headers.get('Access-Control-Allow-Origin'),
+                    'Access-Control-Allow-Methods': response.headers.get('Access-Control-Allow-Methods')
+                };
+                resultDiv.innerHTML = `<div class="success">✅ CORS测试成功<br><pre>${JSON.stringify(corsHeaders, null, 2)}</pre></div>`;
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">❌ CORS测试失败: ${error.message}</div>`;
+            }
+        }
+
+        // API测试
+        async function testAPI() {
+            const resultDiv = document.getElementById('detailResult');
+            try {
+                const response = await axios.get(`${baseURL}/api/categories`, { params: { pageNum: 1, pageSize: 3 } });
+                resultDiv.innerHTML = `
+                    <div class="success">
+                        ✅ API测试成功<br>
+                        数据条数: ${response.data.data?.categories?.length || 0}<br>
+                        <pre>${JSON.stringify(response.data, null, 2)}</pre>
+                    </div>
+                `;
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">❌ API测试失败: ${error.message}</div>`;
+            }
+        }
+
+        // 页面加载时显示环境信息
+        window.onload = showEnvInfo;
+    </script>
+</body>
+</html>

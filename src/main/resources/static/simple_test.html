@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>简单API测试</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .result { margin: 10px 0; padding: 10px; border-radius: 5px; }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        .info { background: #d1ecf1; color: #0c5460; }
+        button { padding: 10px 20px; margin: 5px; border: none; border-radius: 5px; cursor: pointer; }
+        .btn-primary { background: #007bff; color: white; }
+        pre { background: #f8f9fa; padding: 10px; border-radius: 3px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <h1>简单API测试</h1>
+    
+    <div>
+        <button class="btn-primary" onclick="testConnection()">测试连接</button>
+        <button class="btn-primary" onclick="testAPI()">测试分类API</button>
+        <button class="btn-primary" onclick="clearResults()">清除结果</button>
+    </div>
+    
+    <div id="results"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/axios@1.5.0/dist/axios.min.js"></script>
+    <script>
+        // 获取后端服务地址
+        function getBaseURL() {
+            const protocol = window.location.protocol;
+            const hostname = window.location.hostname;
+            return `${protocol}//${hostname}:8081`;
+        }
+
+        const baseURL = getBaseURL();
+        
+        function addResult(message, type = 'info') {
+            const resultsDiv = document.getElementById('results');
+            const resultDiv = document.createElement('div');
+            resultDiv.className = `result ${type}`;
+            resultDiv.innerHTML = message;
+            resultsDiv.appendChild(resultDiv);
+            console.log(`[${type.toUpperCase()}] ${message}`);
+        }
+
+        function clearResults() {
+            document.getElementById('results').innerHTML = '';
+        }
+
+        async function testConnection() {
+            addResult(`正在测试连接到: ${baseURL}`, 'info');
+            
+            try {
+                const response = await axios.get(`${baseURL}/api/categories/health`, {
+                    timeout: 5000
+                });
+                
+                addResult(`✅ 连接成功！响应: ${JSON.stringify(response.data)}`, 'success');
+            } catch (error) {
+                console.error('连接测试失败:', error);
+                
+                let errorMsg = '';
+                if (error.code === 'ECONNREFUSED' || error.message.includes('Network Error')) {
+                    errorMsg = '❌ 连接被拒绝 - 服务器可能未启动';
+                } else if (error.response) {
+                    errorMsg = `❌ HTTP错误 ${error.response.status}: ${error.response.statusText}`;
+                } else {
+                    errorMsg = `❌ 请求失败: ${error.message}`;
+                }
+                
+                addResult(errorMsg, 'error');
+            }
+        }
+
+        async function testAPI() {
+            addResult('正在测试分类API...', 'info');
+            
+            try {
+                const response = await axios.get(`${baseURL}/api/categories`, {
+                    params: { pageNum: 1, pageSize: 5 },
+                    timeout: 10000
+                });
+                
+                if (response.data.success) {
+                    const data = response.data.data;
+                    addResult(`✅ API调用成功！获取到 ${data.categories?.length || 0} 条记录，总计 ${data.total || 0} 条`, 'success');
+                    addResult(`<pre>${JSON.stringify(response.data, null, 2)}</pre>`, 'info');
+                } else {
+                    addResult(`❌ API返回失败: ${response.data.message}`, 'error');
+                }
+            } catch (error) {
+                console.error('API测试失败:', error);
+                
+                let errorMsg = '';
+                if (error.code === 'ECONNREFUSED' || error.message.includes('Network Error')) {
+                    errorMsg = '❌ 无法连接到服务器';
+                } else if (error.response) {
+                    errorMsg = `❌ API错误 ${error.response.status}: ${JSON.stringify(error.response.data)}`;
+                } else {
+                    errorMsg = `❌ 请求失败: ${error.message}`;
+                }
+                
+                addResult(errorMsg, 'error');
+            }
+        }
+
+        // 页面加载时显示基本信息
+        window.onload = function() {
+            addResult(`页面地址: ${window.location.href}`, 'info');
+            addResult(`后端地址: ${baseURL}`, 'info');
+            addResult('点击"测试连接"开始测试', 'info');
+        };
+    </script>
+</body>
+</html> 

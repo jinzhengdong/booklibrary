@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>连接测试 - 图书馆管理系统</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .test-item {
+            margin: 15px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .success { background-color: #d4edda; border-color: #c3e6cb; }
+        .error { background-color: #f8d7da; border-color: #f5c6cb; }
+        .info { background-color: #d1ecf1; border-color: #bee5eb; }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background: #0056b3; }
+        pre { background: #f8f9fa; padding: 10px; border-radius: 3px; overflow-x: auto; }
+        .status { font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 连接测试工具</h1>
+        <p>此页面帮助您诊断前端页面与后端API的连接问题。</p>
+        
+        <div class="test-item info">
+            <h3>📍 当前环境信息</h3>
+            <div id="envInfo"></div>
+        </div>
+        
+        <div class="test-item">
+            <h3>🌐 网络连接测试</h3>
+            <button onclick="testConnection()">测试后端连接</button>
+            <div id="connectionResult"></div>
+        </div>
+        
+        <div class="test-item">
+            <h3>🏥 健康检查</h3>
+            <button onclick="testHealth()">健康检查</button>
+            <div id="healthResult"></div>
+        </div>
+        
+        <div class="test-item">
+            <h3>📊 API测试</h3>
+            <button onclick="testCategoryAPI()">测试分类API</button>
+            <div id="apiResult"></div>
+        </div>
+        
+        <div class="test-item">
+            <h3>🔍 诊断建议</h3>
+            <div id="diagnosis"></div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/axios@1.5.0/dist/axios.min.js"></script>
+    <script>
+        // 获取后端服务地址
+        function getBaseURL() {
+            const protocol = window.location.protocol;
+            const hostname = window.location.hostname;
+            
+            if (window.location.port === '8081') {
+                return `${protocol}//${hostname}:8081`;
+            }
+            
+            return `${protocol}//${hostname}:8081`;
+        }
+        
+        const baseURL = getBaseURL();
+        
+        // 显示环境信息
+        function showEnvironmentInfo() {
+            const envInfo = document.getElementById('envInfo');
+            envInfo.innerHTML = `
+                <strong>当前页面地址:</strong> ${window.location.href}<br>
+                <strong>检测到的后端地址:</strong> ${baseURL}<br>
+                <strong>浏览器:</strong> ${navigator.userAgent}<br>
+                <strong>协议:</strong> ${window.location.protocol}<br>
+                <strong>主机:</strong> ${window.location.hostname}<br>
+                <strong>端口:</strong> ${window.location.port || '默认端口'}
+            `;
+        }
+        
+        // 测试基本连接
+        async function testConnection() {
+            const resultDiv = document.getElementById('connectionResult');
+            resultDiv.innerHTML = '<div class="info">正在测试连接...</div>';
+            
+            try {
+                const startTime = Date.now();
+                const response = await axios.get(`${baseURL}/api/categories/health`, {
+                    timeout: 10000 // 10秒超时
+                });
+                const endTime = Date.now();
+                const duration = endTime - startTime;
+                
+                resultDiv.innerHTML = `
+                    <div class="success">
+                        <div class="status">✅ 连接成功</div>
+                        <strong>响应时间:</strong> ${duration}ms<br>
+                        <strong>状态码:</strong> ${response.status}<br>
+                        <strong>响应数据:</strong><br>
+                        <pre>${JSON.stringify(response.data, null, 2)}</pre>
+                    </div>
+                `;
+                updateDiagnosis('connection', true);
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <div class="status">❌ 连接失败</div>
+                        <strong>错误类型:</strong> ${error.code || 'Unknown'}<br>
+                        <strong>错误信息:</strong> ${error.message}<br>
+                        <strong>详细信息:</strong><br>
+                        <pre>${JSON.stringify(error.response?.data || error, null, 2)}</pre>
+                    </div>
+                `;
+                updateDiagnosis('connection', false, error);
+            }
+        }
+        
+        // 健康检查
+        async function testHealth() {
+            const resultDiv = document.getElementById('healthResult');
+            resultDiv.innerHTML = '<div class="info">正在进行健康检查...</div>';
+            
+            try {
+                const response = await axios.get(`${baseURL}/api/categories/health`);
+                
+                resultDiv.innerHTML = `
+                    <div class="success">
+                        <div class="status">✅ 服务健康</div>
+                        <strong>响应:</strong><br>
+                        <pre>${JSON.stringify(response.data, null, 2)}</pre>
+                    </div>
+                `;
+                updateDiagnosis('health', true);
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <div class="status">❌ 服务异常</div>
+                        <strong>错误:</strong> ${error.message}<br>
+                        <pre>${JSON.stringify(error.response?.data || error, null, 2)}</pre>
+                    </div>
+                `;
+                updateDiagnosis('health', false, error);
+            }
+        }
+        
+        // 测试分类API
+        async function testCategoryAPI() {
+            const resultDiv = document.getElementById('apiResult');
+            resultDiv.innerHTML = '<div class="info">正在测试分类API...</div>';
+            
+            try {
+                const response = await axios.get(`${baseURL}/api/categories`, {
+                    params: { pageNum: 1, pageSize: 5 }
+                });
+                
+                resultDiv.innerHTML = `
+                    <div class="success">
+                        <div class="status">✅ API正常</div>
+                        <strong>返回数据条数:</strong> ${response.data.data?.categories?.length || 0}<br>
+                        <strong>总记录数:</strong> ${response.data.data?.total || 0}<br>
+                        <strong>响应数据:</strong><br>
+                        <pre>${JSON.stringify(response.data, null, 2)}</pre>
+                    </div>
+                `;
+                updateDiagnosis('api', true);
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <div class="status">❌ API异常</div>
+                        <strong>错误:</strong> ${error.message}<br>
+                        <pre>${JSON.stringify(error.response?.data || error, null, 2)}</pre>
+                    </div>
+                `;
+                updateDiagnosis('api', false, error);
+            }
+        }
+        
+        // 诊断结果
+        const diagnosisResults = {};
+        
+        function updateDiagnosis(test, success, error = null) {
+            diagnosisResults[test] = { success, error };
+            
+            const diagnosisDiv = document.getElementById('diagnosis');
+            let suggestions = ['<h4>诊断结果和建议:</h4>'];
+            
+            if (diagnosisResults.connection) {
+                if (diagnosisResults.connection.success) {
+                    suggestions.push('✅ 网络连接正常');
+                } else {
+                    const error = diagnosisResults.connection.error;
+                    if (error.code === 'ECONNREFUSED' || error.code === 'ERR_NETWORK') {
+                        suggestions.push('❌ 无法连接到后端服务，请检查:');
+                        suggestions.push('&nbsp;&nbsp;• Spring Boot应用是否已启动');
+                        suggestions.push('&nbsp;&nbsp;• 端口8081是否被占用');
+                        suggestions.push('&nbsp;&nbsp;• 防火墙是否阻止了连接');
+                    } else if (error.code === 'ENOTFOUND') {
+                        suggestions.push('❌ 域名解析失败，请检查主机名设置');
+                    } else {
+                        suggestions.push(`❌ 连接错误: ${error.message}`);
+                    }
+                }
+            }
+            
+            if (diagnosisResults.health) {
+                if (diagnosisResults.health.success) {
+                    suggestions.push('✅ 后端服务健康');
+                } else {
+                    suggestions.push('❌ 后端服务异常，请检查应用日志');
+                }
+            }
+            
+            if (diagnosisResults.api) {
+                if (diagnosisResults.api.success) {
+                    suggestions.push('✅ 分类API正常工作');
+                    suggestions.push('🎉 <strong>所有测试通过！您可以正常使用分类查询页面了。</strong>');
+                } else {
+                    suggestions.push('❌ 分类API异常，请检查数据库连接和服务实现');
+                }
+            }
+            
+            // 通用建议
+            suggestions.push('<br><strong>如果问题仍然存在，请尝试:</strong>');
+            suggestions.push('1. 重启Spring Boot应用');
+            suggestions.push('2. 检查application.properties配置');
+            suggestions.push('3. 查看应用启动日志');
+            suggestions.push('4. 确认数据库文件存在且可访问');
+            suggestions.push('5. 使用浏览器直接访问: <a href="' + baseURL + '/api/categories/health" target="_blank">' + baseURL + '/api/categories/health</a>');
+            
+            diagnosisDiv.innerHTML = suggestions.join('<br>');
+        }
+        
+        // 页面加载时显示环境信息
+        window.onload = function() {
+            showEnvironmentInfo();
+        };
+    </script>
+</body>
+</html> 

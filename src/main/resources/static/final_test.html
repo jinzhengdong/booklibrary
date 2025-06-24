@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>最终测试 - 分类查询功能</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; background: #f5f5f5; }
+        .container { max-width: 1000px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        .success { background: #d4edda; border-color: #c3e6cb; color: #155724; }
+        .error { background: #f8d7da; border-color: #f5c6cb; color: #721c24; }
+        .info { background: #d1ecf1; border-color: #bee5eb; color: #0c5460; }
+        .warning { background: #fff3cd; border-color: #ffeaa7; color: #856404; }
+        button { background: #007bff; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; margin: 5px; }
+        button:hover { background: #0056b3; }
+        button:disabled { background: #6c757d; cursor: not-allowed; }
+        pre { background: #f8f9fa; padding: 10px; border-radius: 3px; overflow-x: auto; font-size: 12px; }
+        .step { margin: 10px 0; padding: 10px; border-left: 4px solid #007bff; }
+        .step.completed { border-left-color: #28a745; background: #f8fff9; }
+        .step.failed { border-left-color: #dc3545; background: #fff8f8; }
+        .data-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        .data-table th, .data-table td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        .data-table th { background: #f8f9fa; font-weight: bold; }
+        .badge { padding: 2px 6px; border-radius: 3px; font-size: 11px; }
+        .badge-success { background: #28a745; color: white; }
+        .badge-danger { background: #dc3545; color: white; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 最终功能测试</h1>
+        <p>验证分类查询系统的完整功能</p>
+        
+        <div class="test-section info">
+            <h3>📍 环境信息</h3>
+            <div id="envInfo"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>🚀 完整测试流程</h3>
+            <button onclick="runCompleteTest()" id="testBtn">开始完整测试</button>
+            <div id="testProgress"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>📊 测试结果</h3>
+            <div id="testResults"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>🎯 快捷操作</h3>
+            <button onclick="window.open('category_query.html', '_blank')">打开分类查询页面</button>
+            <button onclick="window.open('simple_test.html', '_blank')">打开简单测试页面</button>
+            <button onclick="window.open('debug_connection.html', '_blank')">打开调试工具</button>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/axios@1.5.0/dist/axios.min.js"></script>
+    <script>
+        // 获取后端服务地址
+        function getBaseURL() {
+            const protocol = window.location.protocol;
+            const hostname = window.location.hostname;
+            return `${protocol}//${hostname}:8081`;
+        }
+
+        const baseURL = getBaseURL();
+        let testResults = [];
+
+        // 显示环境信息
+        function showEnvironmentInfo() {
+            const envInfo = document.getElementById('envInfo');
+            envInfo.innerHTML = `
+                <strong>当前页面地址:</strong> ${window.location.href}<br>
+                <strong>检测到的后端地址:</strong> ${baseURL}<br>
+                <strong>浏览器:</strong> ${navigator.userAgent.split(' ')[0]}<br>
+                <strong>Origin:</strong> ${window.location.origin}<br>
+                <strong>时间:</strong> ${new Date().toLocaleString()}
+            `;
+        }
+
+        // 添加测试步骤
+        function addTestStep(message, status = 'info') {
+            const progressDiv = document.getElementById('testProgress');
+            const stepDiv = document.createElement('div');
+            stepDiv.className = `step ${status}`;
+            stepDiv.innerHTML = `<strong>${new Date().toLocaleTimeString()}:</strong> ${message}`;
+            progressDiv.appendChild(stepDiv);
+            console.log(`[${status.toUpperCase()}] ${message}`);
+        }
+
+        // 显示测试结果
+        function showTestResults() {
+            const resultsDiv = document.getElementById('testResults');
+            const passedTests = testResults.filter(t => t.passed).length;
+            const totalTests = testResults.length;
+            
+            let html = `
+                <h4>测试总结: ${passedTests}/${totalTests} 通过</h4>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>测试项目</th>
+                            <th>状态</th>
+                            <th>响应时间</th>
+                            <th>详情</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+            
+            testResults.forEach(test => {
+                html += `
+                    <tr>
+                        <td>${test.name}</td>
+                        <td><span class="badge ${test.passed ? 'badge-success' : 'badge-danger'}">${test.passed ? '通过' : '失败'}</span></td>
+                        <td>${test.responseTime}ms</td>
+                        <td>${test.details}</td>
+                    </tr>
+                `;
+            });
+            
+            html += '</tbody></table>';
+            
+            if (passedTests === totalTests) {
+                html += '<div class="success" style="margin-top: 15px; padding: 10px;"><strong>🎉 所有测试通过！您的分类查询系统工作正常。</strong></div>';
+            } else {
+                html += '<div class="error" style="margin-top: 15px; padding: 10px;"><strong>❌ 部分测试失败，请检查错误信息。</strong></div>';
+            }
+            
+            resultsDiv.innerHTML = html;
+        }
+
+        // 执行单个测试
+        async function runTest(name, testFunction) {
+            const startTime = Date.now();
+            try {
+                const result = await testFunction();
+                const responseTime = Date.now() - startTime;
+                testResults.push({
+                    name,
+                    passed: true,
+                    responseTime,
+                    details: result || '成功'
+                });
+                addTestStep(`✅ ${name} - 通过 (${responseTime}ms)`, 'completed');
+                return true;
+            } catch (error) {
+                const responseTime = Date.now() - startTime;
+                testResults.push({
+                    name,
+                    passed: false,
+                    responseTime,
+                    details: error.message
+                });
+                addTestStep(`❌ ${name} - 失败: ${error.message}`, 'failed');
+                return false;
+            }
+        }
+
+        // 完整测试流程
+        async function runCompleteTest() {
+            const btn = document.getElementById('testBtn');
+            btn.disabled = true;
+            btn.textContent = '测试中...';
+            
+            testResults = [];
+            document.getElementById('testProgress').innerHTML = '';
+            document.getElementById('testResults').innerHTML = '';
+            
+            addTestStep('开始完整功能测试...', 'info');
+
+            // 测试1: 健康检查
+            await runTest('健康检查', async () => {
+                const response = await axios.get(`${baseURL}/api/categories/health`, { timeout: 5000 });
+                if (response.data.success && response.data.data === '分类模块运行正常') {
+                    return '服务正常运行';
+                }
+                throw new Error('健康检查响应异常');
+            });
+
+            // 测试2: 基础分类查询
+            await runTest('基础分类查询', async () => {
+                const response = await axios.get(`${baseURL}/api/categories`, {
+                    params: { pageNum: 1, pageSize: 5 },
+                    timeout: 10000
+                });
+                if (response.data.success && response.data.data.categories) {
+                    return `获取到 ${response.data.data.categories.length} 条记录，总计 ${response.data.data.total} 条`;
+                }
+                throw new Error('分类查询失败');
+            });
+
+            // 测试3: 带参数的分类查询
+            await runTest('参数化查询', async () => {
+                const response = await axios.get(`${baseURL}/api/categories`, {
+                    params: { 
+                        pageNum: 1, 
+                        pageSize: 3,
+                        sortBy: 'category_name',
+                        sortDir: 'desc',
+                        includeStatistics: true
+                    },
+                    timeout: 10000
+                });
+                if (response.data.success) {
+                    return `排序查询成功，获取 ${response.data.data.categories.length} 条记录`;
+                }
+                throw new Error('参数化查询失败');
+            });
+
+            // 测试4: 分类树查询
+            await runTest('分类树查询', async () => {
+                const response = await axios.get(`${baseURL}/api/categories/tree`, {
+                    params: { includeInactive: false },
+                    timeout: 10000
+                });
+                if (response.data.success) {
+                    return `树形结构查询成功，获取 ${response.data.data.length} 个顶级分类`;
+                }
+                throw new Error('分类树查询失败');
+            });
+
+            // 测试5: CORS跨域测试
+            await runTest('CORS跨域验证', async () => {
+                const response = await fetch(`${baseURL}/api/categories/health`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Origin': window.location.origin
+                    }
+                });
+                if (response.ok) {
+                    const corsHeaders = {
+                        'Access-Control-Allow-Origin': response.headers.get('Access-Control-Allow-Origin'),
+                        'Access-Control-Allow-Methods': response.headers.get('Access-Control-Allow-Methods')
+                    };
+                    return `CORS配置正确: ${JSON.stringify(corsHeaders)}`;
+                }
+                throw new Error(`CORS失败: ${response.status}`);
+            });
+
+            // 测试6: 错误处理测试
+            await runTest('错误处理验证', async () => {
+                try {
+                    await axios.get(`${baseURL}/api/categories/999999`, { timeout: 5000 });
+                    throw new Error('应该返回404错误');
+                } catch (error) {
+                    if (error.response && error.response.status === 404) {
+                        return '错误处理正确';
+                    }
+                    throw error;
+                }
+            });
+
+            addTestStep('测试完成，生成结果报告...', 'info');
+            showTestResults();
+            
+            btn.disabled = false;
+            btn.textContent = '重新测试';
+        }
+
+        // 页面加载时执行
+        window.onload = function() {
+            showEnvironmentInfo();
+            addTestStep('测试工具已准备就绪，点击"开始完整测试"进行验证', 'info');
+        };
+    </script>
+</body>
+</html> 

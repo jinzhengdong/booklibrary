@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>用户添加 - 图书馆管理系统</title>
+    
+    <!-- LayUI CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/layui@2.8.18/dist/css/layui.css">
+    
+    <!-- Custom CSS -->
+    <style>
+        body {
+            background-color: #f2f2f2;
+            font-family: "Helvetica Neue", Helvetica, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "微软雅黑", Arial, sans-serif;
+        }
+        
+        .main-container {
+            max-width: 800px;
+            margin: 20px auto;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .header-section {
+            background: linear-gradient(135deg, #5FB878 0%, #009688 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header-section h1 {
+            margin: 0;
+            font-size: 24px;
+            font-weight: 500;
+        }
+        
+        .header-section p {
+            margin: 10px 0 0 0;
+            opacity: 0.9;
+            font-size: 14px;
+        }
+        
+        .form-container {
+            padding: 30px;
+        }
+        
+        .section-title {
+            color: #333;
+            font-size: 16px;
+            font-weight: 500;
+            margin-bottom: 20px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #5FB878;
+            position: relative;
+        }
+        
+        .section-title:before {
+            content: '';
+            position: absolute;
+            left: 0;
+            bottom: -2px;
+            width: 30px;
+            height: 2px;
+            background: #009688;
+        }
+        
+        .layui-form-item {
+            margin-bottom: 20px;
+        }
+        
+        .layui-form-label {
+            width: 100px;
+            padding: 9px 15px;
+            font-weight: 500;
+            color: #333;
+        }
+        
+        .layui-input-block {
+            margin-left: 120px;
+        }
+        
+        .layui-form-mid {
+            color: #999;
+        }
+        
+        .required-mark {
+            color: #FF5722;
+            margin-right: 3px;
+        }
+        
+        .form-tips {
+            color: #999;
+            font-size: 12px;
+            margin-top: 5px;
+            line-height: 1.4;
+        }
+        
+        .btn-group {
+            text-align: center;
+            padding-top: 20px;
+            border-top: 1px solid #e6e6e6;
+            margin-top: 30px;
+        }
+        
+        .btn-group .layui-btn {
+            margin: 0 10px;
+            min-width: 100px;
+        }
+        
+        .password-strength {
+            margin-top: 5px;
+            height: 4px;
+            background: #e6e6e6;
+            border-radius: 2px;
+            overflow: hidden;
+        }
+        
+        .password-strength-bar {
+            height: 100%;
+            width: 0%;
+            transition: all 0.3s ease;
+            border-radius: 2px;
+        }
+        
+        .strength-weak { background: #FF5722; }
+        .strength-medium { background: #FF9800; }
+        .strength-strong { background: #4CAF50; }
+        
+        .username-check {
+            position: relative;
+        }
+        
+        .check-status {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 16px;
+        }
+        
+        .check-success { color: #4CAF50; }
+        .check-error { color: #FF5722; }
+        .check-loading { color: #999; }
+        
+        @media (max-width: 768px) {
+            .main-container {
+                margin: 10px;
+                border-radius: 0;
+            }
+            
+            .layui-form-label {
+                width: 80px;
+                padding: 9px 10px;
+            }
+            
+            .layui-input-block {
+                margin-left: 100px;
+            }
+            
+            .form-container {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <!-- Header Section -->
+        <div class="header-section">
+            <h1><i class="layui-icon layui-icon-user"></i> 用户添加</h1>
+            <p>请填写完整的用户信息，带 <span class="required-mark">*</span> 的为必填项</p>
+        </div>
+        
+        <!-- Form Container -->
+        <div class="form-container">
+            <form class="layui-form" id="userForm" lay-filter="userForm">
+                
+                <!-- 基本信息 -->
+                <div class="section-title">
+                    <i class="layui-icon layui-icon-user"></i> 基本信息
+                </div>
+                
+                <div class="layui-form-item">
+                    <label class="layui-form-label"><span class="required-mark">*</span>用户名</label>
+                    <div class="layui-input-block username-check">
+                        <input type="text" name="username" required lay-verify="required|username" 
+                               placeholder="3-50位字母、数字或下划线" autocomplete="off" class="layui-input" maxlength="50">
+                        <div class="check-status" id="usernameStatus"></div>
+                        <div class="form-tips">用户名将用于登录系统，创建后不可修改</div>
+                    </div>
+                </div>
+                
+                <div class="layui-form-item">
+                    <label class="layui-form-label"><span class="required-mark">*</span>真实姓名</label>
+                    <div class="layui-input-block">
+                        <input type="text" name="realName" required lay-verify="required|realName" 
+                               placeholder="请输入真实姓名" autocomplete="off" class="layui-input" maxlength="100">
+                    </div>
+                </div>
+                
+                <div class="layui-form-item">
+                    <div class="layui-inline">
+                        <label class="layui-form-label"><span class="required-mark">*</span>用户类型</label>
+                        <div class="layui-input-inline">
+                            <select name="userType" required lay-verify="required" lay-filter="userType">
+                                <option value="">请选择用户类型</option>
+                                <option value="student">学生</option>
+                                <option value="teacher">教师</option>
+                                <option value="admin">管理员</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="layui-inline">
+                        <label class="layui-form-label"><span class="required-mark">*</span>学号/工号</label>
+                        <div class="layui-input-inline">
+                            <input type="text" name="studentId" required lay-verify="required|studentId" 
+                                   placeholder="请输入学号或工号" autocomplete="off" class="layui-input" maxlength="20">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="layui-form-item">
+                    <label class="layui-form-label">班级/部门</label>
+                    <div class="layui-input-block">
+                        <input type="text" name="classDepartment" lay-verify="classDepartment" 
+                               placeholder="请输入班级或部门名称" autocomplete="off" class="layui-input" maxlength="100">
+                    </div>
+                </div>
+                
+                <!-- 联系信息 -->
+                <div class="section-title">
+                    <i class="layui-icon layui-icon-cellphone"></i> 联系信息
+                </div>
+                
+                <div class="layui-form-item">
+                    <div class="layui-inline">
+                        <label class="layui-form-label">手机号码</label>
+                        <div class="layui-input-inline">
+                            <input type="text" name="phone" lay-verify="phone" 
+                                   placeholder="请输入11位手机号" autocomplete="off" class="layui-input" maxlength="11">
+                        </div>
+                    </div>
+                    <div class="layui-inline">
+                        <label class="layui-form-label">邮箱地址</label>
+                        <div class="layui-input-inline">
+                            <input type="text" name="email" lay-verify="email" 
+                                   placeholder="请输入邮箱地址" autocomplete="off" class="layui-input" maxlength="100">
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 账户设置 -->
+                <div class="section-title">
+                    <i class="layui-icon layui-icon-password"></i> 账户设置
+                </div>
+                
+                <div class="layui-form-item">
+                    <label class="layui-form-label"><span class="required-mark">*</span>登录密码</label>
+                    <div class="layui-input-block">
+                        <input type="password" name="password" required lay-verify="required|password" 
+                               placeholder="6-20位字符，建议包含字母和数字" autocomplete="off" class="layui-input" maxlength="20">
+                        <div class="password-strength">
+                            <div class="password-strength-bar" id="passwordStrengthBar"></div>
+                        </div>
+                        <div class="form-tips" id="passwordTips">密码强度：弱</div>
+                    </div>
+                </div>
+                
+                <div class="layui-form-item">
+                    <label class="layui-form-label"><span class="required-mark">*</span>确认密码</label>
+                    <div class="layui-input-block">
+                        <input type="password" name="confirmPassword" required lay-verify="required|confirmPassword" 
+                               placeholder="请再次输入密码" autocomplete="off" class="layui-input" maxlength="20">
+                    </div>
+                </div>
+                
+                <!-- 权限设置 -->
+                <div class="section-title">
+                    <i class="layui-icon layui-icon-set"></i> 权限设置
+                </div>
+                
+                <div class="layui-form-item">
+                    <div class="layui-inline">
+                        <label class="layui-form-label">最大借书数</label>
+                        <div class="layui-input-inline">
+                            <input type="number" name="maxBorrowBooks" lay-verify="number" 
+                                   placeholder="默认根据用户类型设置" autocomplete="off" class="layui-input" min="1" max="50">
+                        </div>
+                        <div class="layui-form-mid layui-word-aux">本</div>
+                    </div>
+                    <div class="layui-inline">
+                        <label class="layui-form-label">最大借阅天数</label>
+                        <div class="layui-input-inline">
+                            <input type="number" name="maxBorrowDays" lay-verify="number" 
+                                   placeholder="默认根据用户类型设置" autocomplete="off" class="layui-input" min="1" max="365">
+                        </div>
+                        <div class="layui-form-mid layui-word-aux">天</div>
+                    </div>
+                </div>
+                
+                <!-- 按钮组 -->
+                <div class="btn-group">
+                    <button class="layui-btn layui-btn-normal" lay-submit lay-filter="submitUser">
+                        <i class="layui-icon layui-icon-ok"></i> 创建用户
+                    </button>
+                    <button type="reset" class="layui-btn layui-btn-primary">
+                        <i class="layui-icon layui-icon-refresh"></i> 重置表单
+                    </button>
+                    <button type="button" class="layui-btn layui-btn-warm" onclick="window.history.back()">
+                        <i class="layui-icon layui-icon-return"></i> 返回列表
+                    </button>
+                </div>
+                
+            </form>
+        </div>
+    </div>
+
+    <!-- LayUI JS -->
+    <script src="https://unpkg.com/layui@2.8.18/dist/layui.js"></script>
+    <!-- jQuery -->
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
+    
+    <script>
+        layui.use(['form', 'layer', 'util'], function(){
+            var form = layui.form;
+            var layer = layui.layer;
+            var util = layui.util;
+            var $ = layui.$;
+            
+             // API配置
+             var API_BASE_URL = 'http://localhost:8081/api';
+            
+            // 用户名检查防抖定时器
+            var usernameCheckTimer = null;
+            
+            // 表单验证规则
+            form.verify({
+                username: function(value, item) {
+                    if(!value) return '用户名不能为空';
+                    if(!/^[a-zA-Z0-9_]{3,50}$/.test(value)) {
+                        return '用户名必须是3-50位字母、数字或下划线';
+                    }
+                },
+                realName: function(value, item) {
+                    if(!value) return '真实姓名不能为空';
+                    if(value.length < 2 || value.length > 100) {
+                        return '真实姓名长度必须在2-100个字符之间';
+                    }
+                },
+                studentId: function(value, item) {
+                    if(!value) return '学号/工号不能为空';
+                    if(!/^[A-Za-z0-9]{3,20}$/.test(value)) {
+                        return '学号/工号必须是3-20位字母或数字';
+                    }
+                },
+                classDepartment: function(value, item) {
+                    if(value && (value.length < 2 || value.length > 100)) {
+                        return '班级/部门名称长度必须在2-100个字符之间';
+                    }
+                },
+                phone: function(value, item) {
+                    if(value && !/^1[3-9]\d{9}$/.test(value)) {
+                        return '请输入正确的11位手机号码';
+                    }
+                },
+                password: function(value, item) {
+                    if(!value) return '密码不能为空';
+                    if(value.length < 6 || value.length > 20) {
+                        return '密码长度必须在6-20个字符之间';
+                    }
+                },
+                confirmPassword: function(value, item) {
+                    if(!value) return '确认密码不能为空';
+                    var password = $('input[name="password"]').val();
+                    if(value !== password) {
+                        return '两次输入的密码不一致';
+                    }
+                }
+            });
+            
+            // 用户名实时检查
+            $('input[name="username"]').on('input', function() {
+                var username = $(this).val().trim();
+                var statusEl = $('#usernameStatus');
+                
+                // 清除之前的定时器
+                if(usernameCheckTimer) {
+                    clearTimeout(usernameCheckTimer);
+                }
+                
+                if(!username) {
+                    statusEl.html('').removeClass();
+                    return;
+                }
+                
+                // 基本格式检查
+                if(!/^[a-zA-Z0-9_]{3,50}$/.test(username)) {
+                    statusEl.html('<i class="layui-icon layui-icon-close"></i>')
+                           .removeClass().addClass('check-status check-error');
+                    return;
+                }
+                
+                // 防抖检查用户名可用性
+                usernameCheckTimer = setTimeout(function() {
+                    statusEl.html('<i class="layui-icon layui-icon-loading layui-anim layui-anim-rotate layui-anim-loop"></i>')
+                           .removeClass().addClass('check-status check-loading');
+                    
+                                         $.ajax({
+                         url: API_BASE_URL + '/users/check-username',
+                        type: 'GET',
+                        data: { username: username },
+                        success: function(response) {
+                            if(response.success && response.data) {
+                                statusEl.html('<i class="layui-icon layui-icon-ok"></i>')
+                                       .removeClass().addClass('check-status check-success');
+                            } else {
+                                statusEl.html('<i class="layui-icon layui-icon-close"></i>')
+                                       .removeClass().addClass('check-status check-error');
+                            }
+                        },
+                        error: function() {
+                            statusEl.html('<i class="layui-icon layui-icon-close"></i>')
+                                   .removeClass().addClass('check-status check-error');
+                        }
+                    });
+                }, 500);
+            });
+            
+            // 密码强度检测
+            $('input[name="password"]').on('input', function() {
+                var password = $(this).val();
+                var strength = checkPasswordStrength(password);
+                var strengthBar = $('#passwordStrengthBar');
+                var tipsEl = $('#passwordTips');
+                
+                strengthBar.removeClass().addClass('password-strength-bar');
+                
+                if(password.length === 0) {
+                    strengthBar.css('width', '0%');
+                    tipsEl.text('密码强度：弱');
+                    return;
+                }
+                
+                switch(strength) {
+                    case 1:
+                        strengthBar.addClass('strength-weak').css('width', '33%');
+                        tipsEl.text('密码强度：弱');
+                        break;
+                    case 2:
+                        strengthBar.addClass('strength-medium').css('width', '66%');
+                        tipsEl.text('密码强度：中');
+                        break;
+                    case 3:
+                        strengthBar.addClass('strength-strong').css('width', '100%');
+                        tipsEl.text('密码强度：强');
+                        break;
+                }
+            });
+            
+            // 用户类型变化时设置默认借阅权限
+            form.on('select(userType)', function(data) {
+                var userType = data.value;
+                var maxBooksInput = $('input[name="maxBorrowBooks"]');
+                var maxDaysInput = $('input[name="maxBorrowDays"]');
+                
+                if(userType === 'student') {
+                    maxBooksInput.attr('placeholder', '默认5本').val('');
+                    maxDaysInput.attr('placeholder', '默认30天').val('');
+                } else if(userType === 'teacher') {
+                    maxBooksInput.attr('placeholder', '默认10本').val('');
+                    maxDaysInput.attr('placeholder', '默认60天').val('');
+                } else if(userType === 'admin') {
+                    maxBooksInput.attr('placeholder', '默认50本').val('');
+                    maxDaysInput.attr('placeholder', '默认90天').val('');
+                }
+            });
+            
+            // 表单提交
+            form.on('submit(submitUser)', function(data) {
+                var field = data.field;
+                
+                // 显示加载层
+                var loadingIndex = layer.load(2, {
+                    content: '正在创建用户...',
+                    shade: [0.3, '#000']
+                });
+                
+                                 // 发送请求
+                 $.ajax({
+                     url: API_BASE_URL + '/users',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify(field),
+                    success: function(response) {
+                        layer.close(loadingIndex);
+                        
+                        if(response.success) {
+                            layer.msg('用户创建成功！', {
+                                icon: 1,
+                                time: 2000
+                            }, function() {
+                                // 可以选择跳转到用户列表页面或清空表单
+                                if(confirm('用户创建成功！是否继续添加新用户？')) {
+                                    document.getElementById('userForm').reset();
+                                    form.render(); // 重新渲染表单
+                                    $('#usernameStatus').html('').removeClass();
+                                    $('#passwordStrengthBar').css('width', '0%');
+                                    $('#passwordTips').text('密码强度：弱');
+                                } else {
+                                    window.history.back();
+                                }
+                            });
+                        } else {
+                            layer.msg(response.message || '创建用户失败', {
+                                icon: 2,
+                                time: 3000
+                            });
+                        }
+                    },
+                    error: function(xhr) {
+                        layer.close(loadingIndex);
+                        
+                        var errorMsg = '创建用户失败，请稍后重试';
+                        
+                        if(xhr.responseJSON && xhr.responseJSON.message) {
+                            errorMsg = xhr.responseJSON.message;
+                        }
+                        
+                        layer.msg(errorMsg, {
+                            icon: 2,
+                            time: 3000
+                        });
+                    }
+                });
+                
+                return false; // 阻止表单跳转
+            });
+            
+            // 重置表单时清除状态
+            $('button[type="reset"]').on('click', function() {
+                setTimeout(function() {
+                    $('#usernameStatus').html('').removeClass();
+                    $('#passwordStrengthBar').css('width', '0%');
+                    $('#passwordTips').text('密码强度：弱');
+                }, 100);
+            });
+            
+            // 密码强度检测函数
+            function checkPasswordStrength(password) {
+                var score = 0;
+                
+                if(password.length >= 8) score++;
+                if(/[a-z]/.test(password)) score++;
+                if(/[A-Z]/.test(password)) score++;
+                if(/[0-9]/.test(password)) score++;
+                if(/[^A-Za-z0-9]/.test(password)) score++;
+                
+                if(score <= 2) return 1; // 弱
+                if(score <= 4) return 2; // 中
+                return 3; // 强
+            }
+        });
+    </script>
+</body>
+</html>

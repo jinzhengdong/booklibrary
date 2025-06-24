@@ -1,0 +1,766 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>用户信息录入 - 图书馆管理系统</title>
+    
+    <!-- Figma Design System Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    
+    <!-- CSS Framework -->
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    
+    <!-- Custom Styles following Figma Design System -->
+    <style>
+        :root {
+            /* Figma Design Tokens */
+            --primary-50: #f0f9ff;
+            --primary-100: #e0f2fe;
+            --primary-500: #0ea5e9;
+            --primary-600: #0284c7;
+            --primary-700: #0369a1;
+            
+            --gray-50: #f9fafb;
+            --gray-100: #f3f4f6;
+            --gray-200: #e5e7eb;
+            --gray-300: #d1d5db;
+            --gray-400: #9ca3af;
+            --gray-500: #6b7280;
+            --gray-600: #4b5563;
+            --gray-700: #374151;
+            --gray-800: #1f2937;
+            --gray-900: #111827;
+            
+            --success-50: #f0fdf4;
+            --success-500: #22c55e;
+            --error-50: #fef2f2;
+            --error-500: #ef4444;
+            --warning-50: #fffbeb;
+            --warning-500: #f59e0b;
+            
+            /* Typography */
+            --font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            --font-size-xs: 0.75rem;
+            --font-size-sm: 0.875rem;
+            --font-size-base: 1rem;
+            --font-size-lg: 1.125rem;
+            --font-size-xl: 1.25rem;
+            --font-size-2xl: 1.5rem;
+            
+            /* Spacing */
+            --space-1: 0.25rem;
+            --space-2: 0.5rem;
+            --space-3: 0.75rem;
+            --space-4: 1rem;
+            --space-6: 1.5rem;
+            --space-8: 2rem;
+            
+            /* Border Radius */
+            --radius-sm: 0.375rem;
+            --radius-md: 0.5rem;
+            --radius-lg: 0.75rem;
+            --radius-xl: 1rem;
+            
+            /* Shadows */
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        
+        * {
+            font-family: var(--font-family);
+        }
+        
+        body {
+            background: linear-gradient(135deg, var(--primary-50) 0%, var(--gray-50) 100%);
+            min-height: 100vh;
+        }
+        
+        .form-container {
+            background: white;
+            border-radius: var(--radius-xl);
+            box-shadow: var(--shadow-lg);
+            border: 1px solid var(--gray-100);
+        }
+        
+        .form-group {
+            margin-bottom: var(--space-6);
+        }
+        
+        .form-label {
+            display: block;
+            font-size: var(--font-size-sm);
+            font-weight: 500;
+            color: var(--gray-700);
+            margin-bottom: var(--space-2);
+        }
+        
+        .form-label.required::after {
+            content: ' *';
+            color: var(--error-500);
+        }
+        
+        .form-input {
+            width: 100%;
+            padding: var(--space-3) var(--space-4);
+            border: 1px solid var(--gray-300);
+            border-radius: var(--radius-md);
+            font-size: var(--font-size-base);
+            transition: all 0.2s ease-in-out;
+            background-color: white;
+        }
+        
+        .form-input:focus {
+            outline: none;
+            border-color: var(--primary-500);
+            box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.1);
+        }
+        
+        .form-input.error {
+            border-color: var(--error-500);
+            box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+        }
+        
+        .form-select {
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+            background-position: right var(--space-3) center;
+            background-repeat: no-repeat;
+            background-size: 1.5em 1.5em;
+            padding-right: var(--space-8);
+        }
+        
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: var(--space-3) var(--space-6);
+            border-radius: var(--radius-md);
+            font-size: var(--font-size-base);
+            font-weight: 500;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.2s ease-in-out;
+            border: none;
+            gap: var(--space-2);
+        }
+        
+        .btn-primary {
+            background-color: var(--primary-600);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background-color: var(--primary-700);
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-md);
+        }
+        
+        .btn-secondary {
+            background-color: white;
+            color: var(--gray-700);
+            border: 1px solid var(--gray-300);
+        }
+        
+        .btn-secondary:hover {
+            background-color: var(--gray-50);
+            border-color: var(--gray-400);
+        }
+        
+        .error-message {
+            color: var(--error-500);
+            font-size: var(--font-size-xs);
+            margin-top: var(--space-1);
+            display: none;
+        }
+        
+        .success-message {
+            background-color: var(--success-50);
+            color: var(--success-500);
+            padding: var(--space-4);
+            border-radius: var(--radius-md);
+            border: 1px solid rgba(34, 197, 94, 0.2);
+            margin-bottom: var(--space-6);
+            display: none;
+        }
+        
+        .loading {
+            opacity: 0.6;
+            pointer-events: none;
+        }
+        
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--space-6);
+        }
+        
+        @media (max-width: 768px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .header-section {
+            text-align: center;
+            margin-bottom: var(--space-8);
+        }
+        
+        .header-title {
+            font-size: var(--font-size-2xl);
+            font-weight: 700;
+            color: var(--gray-900);
+            margin-bottom: var(--space-2);
+        }
+        
+        .header-subtitle {
+            font-size: var(--font-size-base);
+            color: var(--gray-600);
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 4px;
+            background-color: var(--gray-200);
+            border-radius: 2px;
+            overflow: hidden;
+            margin-bottom: var(--space-8);
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background-color: var(--primary-500);
+            width: 0%;
+            transition: width 0.3s ease-in-out;
+        }
+    </style>
+</head>
+<body>
+    <div class="min-h-screen py-8 px-4">
+        <div class="max-w-2xl mx-auto">
+            <!-- Header Section -->
+            <div class="header-section">
+                <div class="inline-flex items-center justify-center w-16 h-16 bg-primary-100 rounded-full mb-4">
+                    <i class="fas fa-user-plus text-2xl text-primary-600"></i>
+                </div>
+                <h1 class="header-title">用户信息录入</h1>
+                <p class="header-subtitle">请填写完整的用户信息以完成注册</p>
+            </div>
+            
+            <!-- Progress Bar -->
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+            
+            <!-- Form Container -->
+            <div class="form-container p-8">
+                <!-- Success Message -->
+                <div class="success-message" id="successMessage">
+                    <div class="flex items-center">
+                        <i class="fas fa-check-circle mr-2"></i>
+                        <span>用户信息录入成功！</span>
+                    </div>
+                </div>
+                
+                <!-- User Input Form -->
+                <form id="userForm" novalidate>
+                    <!-- Basic Information Section -->
+                    <div class="mb-8">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+                            <i class="fas fa-user mr-2 text-primary-500"></i>
+                            基本信息
+                        </h3>
+                        
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label class="form-label required" for="username">用户名</label>
+                                <input type="text" id="username" name="username" class="form-input" 
+                                       placeholder="请输入用户名" maxlength="50">
+                                <div class="error-message" id="usernameError"></div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label required" for="realName">真实姓名</label>
+                                <input type="text" id="realName" name="realName" class="form-input" 
+                                       placeholder="请输入真实姓名" maxlength="50">
+                                <div class="error-message" id="realNameError"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label class="form-label required" for="userType">用户类型</label>
+                                <select id="userType" name="userType" class="form-input form-select">
+                                    <option value="">请选择用户类型</option>
+                                    <option value="student">学生</option>
+                                    <option value="teacher">教师</option>
+                                    <option value="staff">职工</option>
+                                </select>
+                                <div class="error-message" id="userTypeError"></div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label required" for="studentId">学号/工号</label>
+                                <input type="text" id="studentId" name="studentId" class="form-input" 
+                                       placeholder="请输入学号或工号" maxlength="20">
+                                <div class="error-message" id="studentIdError"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Contact Information Section -->
+                    <div class="mb-8">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+                            <i class="fas fa-address-book mr-2 text-primary-500"></i>
+                            联系信息
+                        </h3>
+                        
+                        <div class="form-group">
+                            <label class="form-label required" for="classDepartment">班级/部门</label>
+                            <input type="text" id="classDepartment" name="classDepartment" class="form-input" 
+                                   placeholder="请输入班级或部门名称" maxlength="100">
+                            <div class="error-message" id="classDepartmentError"></div>
+                        </div>
+                        
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label class="form-label required" for="phone">手机号码</label>
+                                <input type="tel" id="phone" name="phone" class="form-input" 
+                                       placeholder="请输入11位手机号码" maxlength="11">
+                                <div class="error-message" id="phoneError"></div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label required" for="email">邮箱地址</label>
+                                <input type="email" id="email" name="email" class="form-input" 
+                                       placeholder="请输入邮箱地址" maxlength="100">
+                                <div class="error-message" id="emailError"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Account Settings Section -->
+                    <div class="mb-8">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+                            <i class="fas fa-cog mr-2 text-primary-500"></i>
+                            账户设置
+                        </h3>
+                        
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label class="form-label required" for="password">登录密码</label>
+                                <input type="password" id="password" name="password" class="form-input" 
+                                       placeholder="请输入6-20位密码" maxlength="20">
+                                <div class="error-message" id="passwordError"></div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label required" for="confirmPassword">确认密码</label>
+                                <input type="password" id="confirmPassword" name="confirmPassword" class="form-input" 
+                                       placeholder="请再次输入密码" maxlength="20">
+                                <div class="error-message" id="confirmPasswordError"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Form Actions -->
+                    <div class="flex flex-col sm:flex-row gap-4 pt-6 border-t border-gray-200">
+                        <button type="submit" class="btn btn-primary flex-1" id="submitBtn">
+                            <i class="fas fa-save"></i>
+                            提交注册
+                        </button>
+                        <button type="button" class="btn btn-secondary" id="resetBtn">
+                            <i class="fas fa-undo"></i>
+                            重置表单
+                        </button>
+                        <button type="button" class="btn btn-secondary" id="cancelBtn" style="display: none;">
+                            <i class="fas fa-times"></i>
+                            取消
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <!-- JavaScript Libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/axios@1.6.0/dist/axios.min.js"></script>
+    
+    <!-- Custom JavaScript -->
+    <script>
+        // Configuration
+        const API_BASE_URL = 'http://localhost:8081/api';
+        
+        // DOM Elements
+        const form = document.getElementById('userForm');
+        const submitBtn = document.getElementById('submitBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const cancelBtn = document.getElementById('cancelBtn');
+        const successMessage = document.getElementById('successMessage');
+        const progressFill = document.getElementById('progressFill');
+        
+        // Edit mode state
+        let isEditMode = false;
+        let currentUserId = null;
+        
+        // Form validation rules
+        const validationRules = {
+            username: {
+                required: true,
+                minLength: 3,
+                maxLength: 50,
+                pattern: /^[a-zA-Z0-9_]+$/,
+                message: '用户名必须是3-50位字母、数字或下划线'
+            },
+            realName: {
+                required: true,
+                minLength: 2,
+                maxLength: 50,
+                pattern: /^[\u4e00-\u9fa5a-zA-Z\s]+$/,
+                message: '真实姓名必须是2-50位中文或英文'
+            },
+            userType: {
+                required: true,
+                message: '请选择用户类型'
+            },
+            studentId: {
+                required: true,
+                minLength: 3,
+                maxLength: 20,
+                pattern: /^[A-Za-z0-9]+$/,
+                message: '学号/工号必须是3-20位字母或数字'
+            },
+            classDepartment: {
+                required: true,
+                minLength: 2,
+                maxLength: 100,
+                message: '班级/部门名称必须是2-100个字符'
+            },
+            phone: {
+                required: true,
+                pattern: /^1[3-9]\d{9}$/,
+                message: '请输入正确的11位手机号码'
+            },
+            email: {
+                required: true,
+                pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+                message: '请输入正确的邮箱地址'
+            },
+            password: {
+                required: true,
+                minLength: 6,
+                maxLength: 20,
+                message: '密码必须是6-20位字符'
+            },
+            confirmPassword: {
+                required: true,
+                message: '两次输入的密码不一致'
+            }
+        };
+        
+        // Utility functions
+        function showError(fieldName, message) {
+            const field = document.getElementById(fieldName);
+            const errorElement = document.getElementById(fieldName + 'Error');
+            
+            field.classList.add('error');
+            errorElement.textContent = message;
+            errorElement.style.display = 'block';
+        }
+        
+        function hideError(fieldName) {
+            const field = document.getElementById(fieldName);
+            const errorElement = document.getElementById(fieldName + 'Error');
+            
+            field.classList.remove('error');
+            errorElement.style.display = 'none';
+        }
+        
+        function validateField(fieldName, value) {
+            const rule = validationRules[fieldName];
+            if (!rule) return true;
+            
+            // Required validation
+            if (rule.required && (!value || value.trim() === '')) {
+                showError(fieldName, rule.message || `${fieldName}是必填项`);
+                return false;
+            }
+            
+            if (!value) return true; // Skip other validations if field is empty and not required
+            
+            // Length validation
+            if (rule.minLength && value.length < rule.minLength) {
+                showError(fieldName, rule.message);
+                return false;
+            }
+            
+            if (rule.maxLength && value.length > rule.maxLength) {
+                showError(fieldName, rule.message);
+                return false;
+            }
+            
+            // Pattern validation
+            if (rule.pattern && !rule.pattern.test(value)) {
+                showError(fieldName, rule.message);
+                return false;
+            }
+            
+            // Special validation for confirm password
+            if (fieldName === 'confirmPassword') {
+                const password = document.getElementById('password').value;
+                if (value !== password) {
+                    showError(fieldName, rule.message);
+                    return false;
+                }
+            }
+            
+            hideError(fieldName);
+            return true;
+        }
+        
+        function validateForm() {
+            let isValid = true;
+            const formData = new FormData(form);
+            
+            for (const [fieldName] of formData.entries()) {
+                const value = formData.get(fieldName);
+                if (!validateField(fieldName, value)) {
+                    isValid = false;
+                }
+            }
+            
+            return isValid;
+        }
+        
+        function updateProgress() {
+            const fields = Object.keys(validationRules);
+            let filledFields = 0;
+            
+            fields.forEach(fieldName => {
+                const field = document.getElementById(fieldName);
+                if (field && field.value.trim() !== '') {
+                    filledFields++;
+                }
+            });
+            
+            const progress = (filledFields / fields.length) * 100;
+            progressFill.style.width = progress + '%';
+        }
+        
+        function showSuccess(message) {
+            successMessage.querySelector('span').textContent = message;
+            successMessage.style.display = 'block';
+            setTimeout(() => {
+                successMessage.style.display = 'none';
+            }, 5000);
+        }
+        
+        function setLoading(loading) {
+            if (loading) {
+                form.classList.add('loading');
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 提交中...';
+                submitBtn.disabled = true;
+            } else {
+                form.classList.remove('loading');
+                const buttonText = isEditMode ? '更新用户' : '提交注册';
+                submitBtn.innerHTML = `<i class="fas fa-save"></i> ${buttonText}`;
+                submitBtn.disabled = false;
+            }
+        }
+        
+        function populateForm(userData) {
+            // 填充表单数据（编辑模式）
+            document.getElementById('username').value = userData.username || '';
+            document.getElementById('realName').value = userData.realName || '';
+            document.getElementById('userType').value = userData.userType || '';
+            document.getElementById('studentId').value = userData.studentId || '';
+            document.getElementById('classDepartment').value = userData.classDepartment || '';
+            document.getElementById('phone').value = userData.phone || '';
+            document.getElementById('email').value = userData.email || '';
+            
+            // 编辑模式下隐藏密码字段
+            const passwordSection = document.querySelector('.mb-8:last-of-type');
+            if (passwordSection) {
+                passwordSection.style.display = 'none';
+            }
+            
+            // 在模态窗口中显示取消按钮
+            if (window.parent !== window) {
+                cancelBtn.style.display = 'inline-flex';
+            }
+            
+            // 更新按钮文本
+            setLoading(false);
+            updateProgress();
+        }
+        
+        function setupMessageListener() {
+            // 监听来自父窗口的消息
+            window.addEventListener('message', (event) => {
+                if (event.data.type === 'EDIT_USER') {
+                    isEditMode = true;
+                    currentUserId = event.data.user.userId;
+                    populateForm(event.data.user);
+                    
+                    // 更新页面标题
+                    document.querySelector('.header-title').textContent = '编辑用户信息';
+                    document.querySelector('.header-subtitle').textContent = '请修改需要更新的用户信息';
+                }
+            });
+        }
+        
+        function notifyParent(type, data = null) {
+            // 向父窗口发送消息
+            if (window.parent !== window) {
+                window.parent.postMessage({ type, data }, '*');
+            }
+        }
+        
+        // Event listeners
+        form.addEventListener('input', (e) => {
+            const fieldName = e.target.name;
+            if (fieldName && validationRules[fieldName]) {
+                validateField(fieldName, e.target.value);
+                updateProgress();
+            }
+        });
+        
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            if (!validateForm()) {
+                return;
+            }
+            
+            setLoading(true);
+            
+            try {
+                const formData = new FormData(form);
+                const userData = {
+                    username: formData.get('username'),
+                    realName: formData.get('realName'),
+                    userType: formData.get('userType'),
+                    studentId: formData.get('studentId'),
+                    classDepartment: formData.get('classDepartment'),
+                    phone: formData.get('phone'),
+                    email: formData.get('email')
+                };
+                
+                // 只在新增模式下包含密码
+                if (!isEditMode) {
+                    userData.password = formData.get('password');
+                    userData.confirmPassword = formData.get('confirmPassword');
+                }
+                
+                let response;
+                if (isEditMode) {
+                    // 更新用户
+                    response = await axios.put(`${API_BASE_URL}/users/${currentUserId}`, userData, {
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    });
+                } else {
+                    // 创建用户
+                    response = await axios.post(`${API_BASE_URL}/users`, userData, {
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    });
+                }
+                
+                if (response.data.success) {
+                    const successMsg = isEditMode ? '用户信息更新成功！' : '用户注册成功！您现在可以使用账号登录系统。';
+                    showSuccess(successMsg);
+                    
+                    if (!isEditMode) {
+                        form.reset();
+                        updateProgress();
+                    }
+                    
+                    // 通知父窗口操作成功
+                    notifyParent('USER_SAVED', response.data.data);
+                    
+                    // 延迟关闭模态窗口
+                    setTimeout(() => {
+                        notifyParent('CLOSE_MODAL');
+                    }, 1500);
+                    
+                    // Scroll to top to show success message
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                } else {
+                    throw new Error(response.data.message || (isEditMode ? '更新失败' : '注册失败'));
+                }
+                
+            } catch (error) {
+                console.error('Registration error:', error);
+                
+                let errorMessage = isEditMode ? '更新失败，请稍后重试' : '注册失败，请稍后重试';
+                
+                if (error.response && error.response.data) {
+                    errorMessage = error.response.data.message || errorMessage;
+                    
+                    // Handle field-specific errors
+                    if (error.response.data.errors) {
+                        Object.entries(error.response.data.errors).forEach(([field, message]) => {
+                            showError(field, message);
+                        });
+                    }
+                }
+                
+                alert(errorMessage);
+            } finally {
+                setLoading(false);
+            }
+        });
+        
+        resetBtn.addEventListener('click', () => {
+            if (confirm('确定要重置表单吗？所有已填写的信息将被清空。')) {
+                form.reset();
+                
+                // Clear all error states
+                Object.keys(validationRules).forEach(fieldName => {
+                    hideError(fieldName);
+                });
+                
+                updateProgress();
+                successMessage.style.display = 'none';
+            }
+        });
+        
+        cancelBtn.addEventListener('click', () => {
+            notifyParent('CLOSE_MODAL');
+        });
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            updateProgress();
+            setupMessageListener();
+            
+            // Add smooth animations
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.style.opacity = '1';
+                        entry.target.style.transform = 'translateY(0)';
+                    }
+                });
+            });
+            
+            // Observe form sections for animation
+            document.querySelectorAll('.form-container > *').forEach(el => {
+                el.style.opacity = '0';
+                el.style.transform = 'translateY(20px)';
+                el.style.transition = 'opacity 0.6s ease-out, transform 0.6s ease-out';
+                observer.observe(el);
+            });
+        });
+    </script>
+</body>
+</html> 

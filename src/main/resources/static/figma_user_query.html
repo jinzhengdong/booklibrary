@@ -1,0 +1,1094 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>用户管理 - 图书馆管理系统</title>
+    
+    <!-- Figma Design System Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    
+    <!-- Vue.js 2 -->
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.7.14/dist/vue.min.js"></script>
+    
+    <!-- Axios -->
+    <script src="https://cdn.jsdelivr.net/npm/axios@1.6.0/dist/axios.min.js"></script>
+    
+    <!-- Custom Styles following Figma Design System -->
+    <style>
+        :root {
+            /* Figma Design Tokens */
+            --primary-50: #f0f9ff;
+            --primary-100: #e0f2fe;
+            --primary-500: #0ea5e9;
+            --primary-600: #0284c7;
+            --primary-700: #0369a1;
+            
+            --gray-50: #f9fafb;
+            --gray-100: #f3f4f6;
+            --gray-200: #e5e7eb;
+            --gray-300: #d1d5db;
+            --gray-400: #9ca3af;
+            --gray-500: #6b7280;
+            --gray-600: #4b5563;
+            --gray-700: #374151;
+            --gray-800: #1f2937;
+            --gray-900: #111827;
+            
+            --success-50: #f0fdf4;
+            --success-500: #22c55e;
+            --success-600: #16a34a;
+            --error-50: #fef2f2;
+            --error-500: #ef4444;
+            --warning-50: #fffbeb;
+            --warning-500: #f59e0b;
+            
+            /* Typography */
+            --font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            --font-size-xs: 0.75rem;
+            --font-size-sm: 0.875rem;
+            --font-size-base: 1rem;
+            --font-size-lg: 1.125rem;
+            --font-size-xl: 1.25rem;
+            --font-size-2xl: 1.5rem;
+            
+            /* Spacing */
+            --space-1: 0.25rem;
+            --space-2: 0.5rem;
+            --space-3: 0.75rem;
+            --space-4: 1rem;
+            --space-6: 1.5rem;
+            --space-8: 2rem;
+            
+            /* Border Radius */
+            --radius-sm: 0.375rem;
+            --radius-md: 0.5rem;
+            --radius-lg: 0.75rem;
+            --radius-xl: 1rem;
+            
+            /* Shadows */
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+        
+        * {
+            font-family: var(--font-family);
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: linear-gradient(135deg, var(--primary-50) 0%, var(--gray-50) 100%);
+            min-height: 100vh;
+            margin: 0;
+            padding: 0;
+        }
+        
+        .main-container {
+            padding: var(--space-8);
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        .page-header {
+            background: white;
+            border-radius: var(--radius-xl);
+            box-shadow: var(--shadow-md);
+            padding: var(--space-8);
+            margin-bottom: var(--space-6);
+            border: 1px solid var(--gray-100);
+        }
+        
+        .header-content {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: var(--space-4);
+        }
+        
+        .header-title {
+            display: flex;
+            align-items: center;
+            gap: var(--space-3);
+        }
+        
+        .title-icon {
+            width: 48px;
+            height: 48px;
+            background: var(--primary-100);
+            border-radius: var(--radius-lg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary-600);
+            font-size: 1.5rem;
+        }
+        
+        .title-text h1 {
+            font-size: var(--font-size-2xl);
+            font-weight: 700;
+            color: var(--gray-900);
+            margin: 0;
+        }
+        
+        .title-text p {
+            font-size: var(--font-size-base);
+            color: var(--gray-600);
+            margin: var(--space-1) 0 0 0;
+        }
+        
+        .header-actions {
+            display: flex;
+            gap: var(--space-3);
+        }
+        
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: var(--space-3) var(--space-6);
+            border-radius: var(--radius-md);
+            font-size: var(--font-size-base);
+            font-weight: 500;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.2s ease-in-out;
+            border: none;
+            gap: var(--space-2);
+            white-space: nowrap;
+        }
+        
+        .btn-primary {
+            background-color: var(--primary-600);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background-color: var(--primary-700);
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-md);
+        }
+        
+        .btn-secondary {
+            background-color: white;
+            color: var(--gray-700);
+            border: 1px solid var(--gray-300);
+        }
+        
+        .btn-secondary:hover {
+            background-color: var(--gray-50);
+            border-color: var(--gray-400);
+        }
+        
+        .search-filters {
+            background: white;
+            border-radius: var(--radius-xl);
+            box-shadow: var(--shadow-md);
+            padding: var(--space-6);
+            margin-bottom: var(--space-6);
+            border: 1px solid var(--gray-100);
+        }
+        
+        .filter-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr 2fr auto;
+            gap: var(--space-4);
+            align-items: end;
+        }
+        
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .form-label {
+            font-size: var(--font-size-sm);
+            font-weight: 500;
+            color: var(--gray-700);
+            margin-bottom: var(--space-2);
+        }
+        
+        .form-input, .form-select {
+            padding: var(--space-3) var(--space-4);
+            border: 1px solid var(--gray-300);
+            border-radius: var(--radius-md);
+            font-size: var(--font-size-base);
+            transition: all 0.2s ease-in-out;
+            background-color: white;
+        }
+        
+        .form-input:focus, .form-select:focus {
+            outline: none;
+            border-color: var(--primary-500);
+            box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.1);
+        }
+        
+        .form-select {
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+            background-position: right var(--space-3) center;
+            background-repeat: no-repeat;
+            background-size: 1.5em 1.5em;
+            padding-right: var(--space-8);
+        }
+        
+        .data-table {
+            background: white;
+            border-radius: var(--radius-xl);
+            box-shadow: var(--shadow-md);
+            border: 1px solid var(--gray-100);
+            overflow: hidden;
+        }
+        
+        .table-header {
+            padding: var(--space-6);
+            border-bottom: 1px solid var(--gray-200);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .table-title {
+            font-size: var(--font-size-lg);
+            font-weight: 600;
+            color: var(--gray-900);
+        }
+        
+        .table-stats {
+            font-size: var(--font-size-sm);
+            color: var(--gray-500);
+        }
+        
+        .table-container {
+            overflow-x: auto;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        th, td {
+            padding: var(--space-4) var(--space-6);
+            text-align: left;
+            border-bottom: 1px solid var(--gray-100);
+        }
+        
+        th {
+            background-color: var(--gray-50);
+            font-weight: 600;
+            color: var(--gray-700);
+            font-size: var(--font-size-sm);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        
+        td {
+            font-size: var(--font-size-base);
+            color: var(--gray-900);
+        }
+        
+        tr:hover {
+            background-color: var(--gray-50);
+        }
+        
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: var(--space-1) var(--space-3);
+            border-radius: var(--radius-sm);
+            font-size: var(--font-size-xs);
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        
+        .status-active {
+            background-color: var(--success-50);
+            color: var(--success-600);
+        }
+        
+        .status-frozen {
+            background-color: var(--warning-50);
+            color: var(--warning-500);
+        }
+        
+        .status-graduated {
+            background-color: var(--gray-100);
+            color: var(--gray-600);
+        }
+        
+        .user-type-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: var(--space-1) var(--space-3);
+            border-radius: var(--radius-sm);
+            font-size: var(--font-size-xs);
+            font-weight: 500;
+        }
+        
+        .type-student {
+            background-color: var(--primary-50);
+            color: var(--primary-600);
+        }
+        
+        .type-teacher {
+            background-color: var(--success-50);
+            color: var(--success-600);
+        }
+        
+        .type-admin {
+            background-color: var(--error-50);
+            color: var(--error-500);
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: var(--space-2);
+        }
+        
+        .btn-icon {
+            padding: var(--space-2);
+            border-radius: var(--radius-sm);
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s ease-in-out;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+        }
+        
+        .btn-edit {
+            background-color: var(--primary-50);
+            color: var(--primary-600);
+        }
+        
+        .btn-edit:hover {
+            background-color: var(--primary-100);
+        }
+        
+        .btn-delete {
+            background-color: var(--error-50);
+            color: var(--error-500);
+        }
+        
+        .btn-delete:hover {
+            background-color: var(--error-100);
+        }
+        
+        .pagination {
+            padding: var(--space-6);
+            border-top: 1px solid var(--gray-200);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: var(--space-4);
+        }
+        
+        .pagination-info {
+            flex: 1;
+            font-size: var(--font-size-sm);
+            color: var(--gray-600);
+        }
+        
+        .pagination-controls {
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
+        }
+        
+        .pagination-btn {
+            padding: var(--space-2) var(--space-3);
+            border: 1px solid var(--gray-300);
+            background: white;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            font-size: var(--font-size-sm);
+            transition: all 0.2s ease-in-out;
+        }
+        
+        .pagination-btn:hover:not(:disabled) {
+            background-color: var(--gray-50);
+            border-color: var(--gray-400);
+        }
+        
+        .pagination-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .pagination-btn.active {
+            background-color: var(--primary-600);
+            color: white;
+            border-color: var(--primary-600);
+        }
+        
+        .loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: var(--space-8);
+            color: var(--gray-500);
+        }
+        
+        .loading i {
+            margin-right: var(--space-2);
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: var(--space-8);
+            color: var(--gray-500);
+        }
+        
+        .empty-state i {
+            font-size: 3rem;
+            margin-bottom: var(--space-4);
+            color: var(--gray-300);
+        }
+        
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease-in-out;
+        }
+        
+        .modal-overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: var(--radius-xl);
+            box-shadow: var(--shadow-xl);
+            width: 90vw;
+            height: 90vh;
+            max-width: 1200px;
+            max-height: 800px;
+            overflow: hidden;
+            transform: scale(0.9);
+            transition: transform 0.3s ease-in-out;
+        }
+        
+        .modal-overlay.show .modal-content {
+            transform: scale(1);
+        }
+        
+        .modal-header {
+            padding: var(--space-6);
+            border-bottom: 1px solid var(--gray-200);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .modal-title {
+            font-size: var(--font-size-lg);
+            font-weight: 600;
+            color: var(--gray-900);
+        }
+        
+        .modal-close {
+            padding: var(--space-2);
+            border: none;
+            background: none;
+            cursor: pointer;
+            border-radius: var(--radius-sm);
+            color: var(--gray-500);
+            transition: all 0.2s ease-in-out;
+        }
+        
+        .modal-close:hover {
+            background-color: var(--gray-100);
+            color: var(--gray-700);
+        }
+        
+        .modal-body {
+            height: calc(100% - 80px);
+            overflow: auto;
+        }
+        
+        .modal-iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+        
+        @media (max-width: 1024px) {
+            .filter-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+            
+            .main-container {
+                padding: var(--space-4);
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .filter-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .header-content {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .table-container {
+                font-size: var(--font-size-sm);
+            }
+            
+            th, td {
+                padding: var(--space-3) var(--space-4);
+            }
+            
+            .modal-content {
+                width: 95vw;
+                height: 95vh;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="app" class="main-container">
+        <!-- Page Header -->
+        <div class="page-header">
+            <div class="header-content">
+                <div class="header-title">
+                    <div class="title-icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="title-text">
+                        <h1>用户管理</h1>
+                        <p>管理系统用户信息，支持学生、教师和管理员账户</p>
+                    </div>
+                </div>
+                <div class="header-actions">
+                    <button class="btn btn-secondary" @click="refreshData">
+                        <i class="fas fa-sync-alt"></i>
+                        刷新
+                    </button>
+                    <button class="btn btn-primary" @click="openUserModal">
+                        <i class="fas fa-plus"></i>
+                        添加用户
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Search and Filters -->
+        <div class="search-filters">
+            <div class="filter-grid">
+                <div class="form-group">
+                    <label class="form-label">用户类型</label>
+                    <select v-model="filters.userType" @change="handleFilterChange" class="form-select">
+                        <option value="">全部类型</option>
+                        <option value="student">学生</option>
+                        <option value="teacher">教师</option>
+                        <option value="admin">管理员</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">用户状态</label>
+                    <select v-model="filters.status" @change="handleFilterChange" class="form-select">
+                        <option value="">全部状态</option>
+                        <option value="active">正常</option>
+                        <option value="frozen">冻结</option>
+                        <option value="graduated">毕业</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">每页显示</label>
+                    <select v-model="pagination.pageSize" @change="handlePageSizeChange" class="form-select">
+                        <option value="10">10条</option>
+                        <option value="20">20条</option>
+                        <option value="50">50条</option>
+                        <option value="100">100条</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">搜索</label>
+                    <input 
+                        type="text" 
+                        v-model="filters.keyword" 
+                        @input="handleSearch"
+                        placeholder="搜索姓名、用户名或学号..."
+                        class="form-input"
+                    >
+                </div>
+                
+                <div class="form-group">
+                    <button class="btn btn-secondary" @click="resetFilters">
+                        <i class="fas fa-times"></i>
+                        重置
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Data Table -->
+        <div class="data-table">
+            <div class="table-header">
+                <h3 class="table-title">用户列表</h3>
+                <div class="table-stats">
+                    共 {{ userList.total || 0 }} 条记录
+                </div>
+            </div>
+            
+            <div class="table-container">
+                <div v-if="loading" class="loading">
+                    <i class="fas fa-spinner fa-spin"></i>
+                    <span>加载中...</span>
+                </div>
+                
+                <div v-else-if="userList.users && userList.users.length === 0" class="empty-state">
+                    <i class="fas fa-user-slash"></i>
+                    <h3>暂无用户数据</h3>
+                    <p>没有找到符合条件的用户，请尝试调整筛选条件</p>
+                </div>
+                
+                <table v-else>
+                    <thead>
+                        <tr>
+                            <th>用户信息</th>
+                            <th>类型</th>
+                            <th>学号/工号</th>
+                            <th>班级/部门</th>
+                            <th>联系方式</th>
+                            <th>状态</th>
+                            <th>借阅情况</th>
+                            <th>注册时间</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr v-for="user in userList.users" :key="user.userId">
+                            <td>
+                                <div>
+                                    <div style="font-weight: 600;">{{ user.realName }}</div>
+                                    <div style="font-size: 0.875rem; color: var(--gray-500);">{{ user.username }}</div>
+                                </div>
+                            </td>
+                            <td>
+                                <span :class="['user-type-badge', getUserTypeBadgeClass(user.userType)]">
+                                    {{ getUserTypeName(user.userType) }}
+                                </span>
+                            </td>
+                            <td>{{ user.studentId || '-' }}</td>
+                            <td>{{ user.classDepartment || '-' }}</td>
+                            <td>
+                                <div>
+                                    <div>{{ user.phone || '-' }}</div>
+                                    <div style="font-size: 0.875rem; color: var(--gray-500);">{{ user.email || '-' }}</div>
+                                </div>
+                            </td>
+                            <td>
+                                <span :class="['status-badge', getStatusBadgeClass(user.status)]">
+                                    {{ getStatusName(user.status) }}
+                                </span>
+                            </td>
+                            <td>
+                                <div>
+                                    <span>{{ user.currentBorrowCount || 0 }}/{{ user.maxBorrowBooks || 0 }}</span>
+                                </div>
+                            </td>
+                            <td>{{ formatDate(user.registrationDate) }}</td>
+                            <td>
+                                <div class="action-buttons">
+                                    <button 
+                                        class="btn-icon btn-edit" 
+                                        @click="editUser(user)"
+                                        title="编辑用户"
+                                    >
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button 
+                                        class="btn-icon btn-delete" 
+                                        @click="deleteUser(user)"
+                                        title="删除用户"
+                                    >
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Pagination -->
+            <div v-if="userList.users && userList.users.length > 0" class="pagination">
+                <div class="pagination-info">
+                    显示第 {{ getPaginationStart() }} - {{ getPaginationEnd() }} 条，共 {{ userList.total }} 条记录
+                </div>
+                
+                <div class="pagination-controls">
+                    <button 
+                        class="pagination-btn" 
+                        @click="changePage(pagination.pageNum - 1)"
+                        :disabled="!userList.hasPrevious"
+                    >
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    
+                    <button 
+                        v-for="page in getVisiblePages()" 
+                        :key="page"
+                        class="pagination-btn"
+                        :class="{ active: page === pagination.pageNum }"
+                        @click="changePage(page)"
+                    >
+                        {{ page }}
+                    </button>
+                    
+                    <button 
+                        class="pagination-btn" 
+                        @click="changePage(pagination.pageNum + 1)"
+                        :disabled="!userList.hasNext"
+                    >
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- User Modal -->
+        <div class="modal-overlay" :class="{ show: showUserModal }" @click="closeUserModal">
+            <div class="modal-content" @click.stop>
+                <div class="modal-header">
+                    <h3 class="modal-title">{{ modalTitle }}</h3>
+                    <button class="modal-close" @click="closeUserModal">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <iframe 
+                        ref="userIframe"
+                        class="modal-iframe" 
+                        :src="modalSrc"
+                        @load="handleIframeLoad"
+                    ></iframe>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        new Vue({
+            el: '#app',
+            data() {
+                return {
+                    loading: false,
+                    userList: {
+                        users: [],
+                        total: 0,
+                        pageNum: 1,
+                        pageSize: 10,
+                        totalPages: 0,
+                        hasPrevious: false,
+                        hasNext: false,
+                        isFirst: true,
+                        isLast: true
+                    },
+                    filters: {
+                        userType: '',
+                        status: '',
+                        keyword: ''
+                    },
+                    pagination: {
+                        pageNum: 1,
+                        pageSize: 10
+                    },
+                    searchTimeout: null,
+                    showUserModal: false,
+                    modalTitle: '添加用户',
+                    modalSrc: '',
+                    currentEditUser: null
+                }
+            },
+            
+            mounted() {
+                this.loadUserList();
+                this.setupMessageListener();
+            },
+            
+            methods: {
+                // API调用方法
+                async loadUserList() {
+                    this.loading = true;
+                    try {
+                        const params = {
+                            pageNum: this.pagination.pageNum,
+                            pageSize: this.pagination.pageSize,
+                            ...this.filters
+                        };
+                        
+                        // 移除空值参数
+                        Object.keys(params).forEach(key => {
+                            if (params[key] === '' || params[key] === null || params[key] === undefined) {
+                                delete params[key];
+                            }
+                        });
+                        
+                        const response = await axios.get('http://localhost:8081/api/users', { params });
+                        
+                        if (response.data.success) {
+                            this.userList = response.data.data;
+                        } else {
+                            this.showError(response.data.message || '加载用户列表失败');
+                        }
+                    } catch (error) {
+                        console.error('加载用户列表失败:', error);
+                        this.showError('加载用户列表失败，请稍后重试');
+                    } finally {
+                        this.loading = false;
+                    }
+                },
+                
+                async deleteUserApi(userId) {
+                    try {
+                        const response = await axios.delete(`http://localhost:8081/api/users/${userId}`);
+                        
+                        if (response.data.success) {
+                            this.showSuccess('用户删除成功');
+                            this.loadUserList();
+                        } else {
+                            this.showError(response.data.message || '删除用户失败');
+                        }
+                    } catch (error) {
+                        console.error('删除用户失败:', error);
+                        this.showError('删除用户失败，请稍后重试');
+                    }
+                },
+                
+                // 事件处理方法
+                handleFilterChange() {
+                    this.pagination.pageNum = 1;
+                    this.loadUserList();
+                },
+                
+                handlePageSizeChange() {
+                    this.pagination.pageNum = 1;
+                    this.loadUserList();
+                },
+                
+                handleSearch() {
+                    // 防抖搜索
+                    if (this.searchTimeout) {
+                        clearTimeout(this.searchTimeout);
+                    }
+                    
+                    this.searchTimeout = setTimeout(() => {
+                        this.pagination.pageNum = 1;
+                        this.loadUserList();
+                    }, 500);
+                },
+                
+                resetFilters() {
+                    this.filters = {
+                        userType: '',
+                        status: '',
+                        keyword: ''
+                    };
+                    this.pagination.pageNum = 1;
+                    this.loadUserList();
+                },
+                
+                refreshData() {
+                    this.loadUserList();
+                },
+                
+                // 分页方法
+                changePage(pageNum) {
+                    if (pageNum >= 1 && pageNum <= this.userList.totalPages) {
+                        this.pagination.pageNum = pageNum;
+                        this.loadUserList();
+                    }
+                },
+                
+                getVisiblePages() {
+                    const current = this.pagination.pageNum;
+                    const total = this.userList.totalPages;
+                    const pages = [];
+                    
+                    if (total <= 7) {
+                        for (let i = 1; i <= total; i++) {
+                            pages.push(i);
+                        }
+                    } else {
+                        if (current <= 4) {
+                            for (let i = 1; i <= 5; i++) {
+                                pages.push(i);
+                            }
+                            pages.push('...');
+                            pages.push(total);
+                        } else if (current >= total - 3) {
+                            pages.push(1);
+                            pages.push('...');
+                            for (let i = total - 4; i <= total; i++) {
+                                pages.push(i);
+                            }
+                        } else {
+                            pages.push(1);
+                            pages.push('...');
+                            for (let i = current - 1; i <= current + 1; i++) {
+                                pages.push(i);
+                            }
+                            pages.push('...');
+                            pages.push(total);
+                        }
+                    }
+                    
+                    return pages.filter(page => page !== '...' || pages.indexOf(page) === pages.lastIndexOf(page));
+                },
+                
+                getPaginationStart() {
+                    return (this.pagination.pageNum - 1) * this.pagination.pageSize + 1;
+                },
+                
+                getPaginationEnd() {
+                    const end = this.pagination.pageNum * this.pagination.pageSize;
+                    return Math.min(end, this.userList.total);
+                },
+                
+                // 模态窗口方法
+                openUserModal() {
+                    this.modalTitle = '添加用户';
+                    this.modalSrc = './figma_user_input.html';
+                    this.currentEditUser = null;
+                    this.showUserModal = true;
+                },
+                
+                closeUserModal() {
+                    this.showUserModal = false;
+                    this.modalSrc = '';
+                },
+                
+                handleIframeLoad() {
+                    // iframe加载完成后的处理
+                    if (this.currentEditUser && this.$refs.userIframe) {
+                        // 如果是编辑模式，向iframe传递用户数据
+                        try {
+                            this.$refs.userIframe.contentWindow.postMessage({
+                                type: 'EDIT_USER',
+                                user: this.currentEditUser
+                            }, '*');
+                        } catch (error) {
+                            console.warn('无法向iframe发送消息:', error);
+                        }
+                    }
+                },
+                
+                setupMessageListener() {
+                    // 监听来自iframe的消息
+                    window.addEventListener('message', (event) => {
+                        if (event.data.type === 'USER_SAVED') {
+                            this.closeUserModal();
+                            this.loadUserList();
+                            this.showSuccess('用户保存成功');
+                        } else if (event.data.type === 'CLOSE_MODAL') {
+                            this.closeUserModal();
+                        }
+                    });
+                },
+                
+                // 用户操作方法
+                editUser(user) {
+                    this.modalTitle = '编辑用户';
+                    this.modalSrc = './figma_user_input.html';
+                    this.currentEditUser = user;
+                    this.showUserModal = true;
+                },
+                
+                deleteUser(user) {
+                    if (confirm(`确定要删除用户"${user.realName}"吗？此操作不可撤销。`)) {
+                        this.deleteUserApi(user.userId);
+                    }
+                },
+                
+                // 工具方法
+                getUserTypeName(type) {
+                    const typeMap = {
+                        'student': '学生',
+                        'teacher': '教师',
+                        'admin': '管理员'
+                    };
+                    return typeMap[type] || type;
+                },
+                
+                getUserTypeBadgeClass(type) {
+                    const classMap = {
+                        'student': 'type-student',
+                        'teacher': 'type-teacher',
+                        'admin': 'type-admin'
+                    };
+                    return classMap[type] || 'type-student';
+                },
+                
+                getStatusName(status) {
+                    const statusMap = {
+                        'active': '正常',
+                        'frozen': '冻结',
+                        'graduated': '毕业'
+                    };
+                    return statusMap[status] || status;
+                },
+                
+                getStatusBadgeClass(status) {
+                    const classMap = {
+                        'active': 'status-active',
+                        'frozen': 'status-frozen',
+                        'graduated': 'status-graduated'
+                    };
+                    return classMap[status] || 'status-active';
+                },
+                
+                formatDate(dateString) {
+                    if (!dateString) return '-';
+                    const date = new Date(dateString);
+                    return date.toLocaleDateString('zh-CN');
+                },
+                
+                showSuccess(message) {
+                    // 简单的成功提示
+                    alert('✅ ' + message);
+                },
+                
+                showError(message) {
+                    // 简单的错误提示
+                    alert('❌ ' + message);
+                }
+            }
+        });
+    </script>
+</body>
+</html> 
